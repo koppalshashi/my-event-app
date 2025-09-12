@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Registration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f3f4f6;
+    }
+    .step-active {
+      background-color: #10b981;
+      border-color: #10b981;
+    }
+    .step-active .step-number {
+      color: white;
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+
+<div class="bg-white p-8 md:p-12 rounded-2xl shadow-xl w-full max-w-lg mx-4 transition-all duration-300">
+  <div class="flex items-center justify-between mb-8">
+    <!-- Stepper UI -->
+    <div class="flex items-center space-x-2 md:space-x-4">
+      <div id="step-1-indicator" class="flex flex-col items-center step-indicator">
+        <div class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full border-2 border-gray-300 step-1-number">
+          <span class="step-number text-gray-500 font-bold">1</span>
+        </div>
+        <span class="text-xs md:text-sm mt-2 text-gray-600">Registration</span>
+      </div>
+      <div class="w-8 md:w-10 h-0.5 bg-gray-300"></div>
+      <div id="step-2-indicator" class="flex flex-col items-center step-indicator">
+        <div class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full border-2 border-gray-300 step-2-number">
+          <span class="step-number text-gray-500 font-bold">2</span>
+        </div>
+        <span class="text-xs md:text-sm mt-2 text-gray-600">Payment</span>
+      </div>
+      <div class="w-8 md:w-10 h-0.5 bg-gray-300"></div>
+      <div id="step-3-indicator" class="flex flex-col items-center step-indicator">
+        <div class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full border-2 border-gray-300 step-3-number">
+          <span class="step-number text-gray-500 font-bold">3</span>
+        </div>
+        <span class="text-xs md:text-sm mt-2 text-gray-600">QR Code</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 1: Registration Form -->
+  <div id="step-1" class="step">
+    <h2 class="text-2xl md:text-3xl font-bold mb-4 text-gray-800">Event Registration</h2>
+    <form id="registration-form">
+      <div class="mb-4">
+        <label for="name" class="block text-gray-700 text-sm font-semibold mb-2">Full Name</label>
+        <input type="text" id="name" name="name" required class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-400 transition-all duration-200">
+      </div>
+      <div class="mb-4">
+        <label for="email" class="block text-gray-700 text-sm font-semibold mb-2">Email Address</label>
+        <input type="email" id="email" name="email" required class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-400 transition-all duration-200">
+      </div>
+      <div class="mb-4">
+        <label for="phone" class="block text-gray-700 text-sm font-semibold mb-2">Phone Number</label>
+        <input type="tel" id="phone" name="phone" required class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-400 transition-all duration-200">
+      </div>
+      <div class="mb-6">
+        <label for="event" class="block text-gray-700 text-sm font-semibold mb-2">Event</label>
+        <select id="event" name="event" required class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-400 transition-all duration-200">
+          <option value="Annual Conference">Annual Conference</option>
+          <option value="Tech Summit">Tech Summit</option>
+          <option value="Networking Gala">Networking Gala</option>
+        </select>
+      </div>
+      <button type="submit" class="w-full bg-green-500 text-white font-bold py-3 px-6 rounded-xl hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition-all duration-300">Next</button>
+    </form>
+  </div>
+
+  <!-- Step 2: Payment Page -->
+  <div id="step-2" class="step hidden text-center">
+    <h2 class="text-2xl md:text-3xl font-bold mb-4 text-gray-800">Complete Your Payment</h2>
+    <div class="bg-gray-100 p-6 rounded-xl mb-6">
+      <p class="text-gray-600 mb-2">Please proceed to pay the registration fee.</p>
+      <p class="text-2xl font-bold text-green-600">Amount: ₹<span id="amount-to-pay">1500</span></p>
+    </div>
+    <div id="payment-status" class="mb-4 text-lg font-semibold text-gray-600"></div>
+    <div id="paypal-button-container" class="mb-4"></div>
+    <button id="go-back-payment" class="w-full mt-4 bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-xl hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-300">Go Back</button>
+  </div>
+
+  <!-- Step 3: QR Code Page -->
+  <div id="step-3" class="step hidden text-center">
+    <h2 class="text-2xl md:text-3xl font-bold mb-4 text-gray-800">Registration Complete!</h2>
+    <div id="qr-code-container" class="flex justify-center mb-6"></div>
+    <div class="bg-gray-100 p-6 rounded-xl text-left mb-6">
+      <p class="text-gray-700 font-semibold text-lg mb-2">Your Details:</p>
+      <p class="text-gray-600">Name: <span id="display-name" class="font-medium"></span></p>
+      <p class="text-gray-600">Email: <span id="display-email" class="font-medium"></span></p>
+      <p class="text-gray-600">Event: <span id="display-event" class="font-medium"></span></p>
+      <p class="text-gray-600">Amount Paid: ₹<span id="display-amount" class="font-medium"></span></p>
+    </div>
+    <button id="download-qr" class="w-full bg-green-500 text-white font-bold py-3 px-6 rounded-xl hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition-all duration-300">
+      Download QR Code
+    </button>
+    <button id="start-over" class="w-full mt-4 bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-xl hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-300">Start Over</button>
+  </div>
+
+  <div id="modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white p-6 rounded-xl shadow-xl max-w-sm w-full text-center">
+      <p id="modal-text" class="text-gray-700 font-medium text-lg mb-4"></p>
+      <button id="modal-close" class="w-full bg-blue-500 text-white font-bold py-2 rounded-lg hover:bg-blue-600">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR Code Library -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/qrcode.min.js"></script>
+<!-- PayPal SDK (force USD for sandbox) -->
+<script src="https://www.paypal.com/sdk/js?client-id=AfGv61aBh0MzB3r8bbp9v8WHF2Fi8w_kd_CSmMpbxvUkY-euh_vTiLKTuHMj9ORTF3rJkX1_8_khRlHq&currency=USD"></script>
+
+<script>
+let registrationId = null; 
+const steps = document.querySelectorAll('.step');
+const stepIndicators = document.querySelectorAll('.step-indicator > div');
+const registrationForm = document.getElementById('registration-form');
+const goBackPayment = document.getElementById('go-back-payment');
+const downloadQrButton = document.getElementById('download-qr');
+const startOverButton = document.getElementById('start-over');
+const paymentStatusText = document.getElementById('payment-status');
+const qrCodeContainer = document.getElementById('qr-code-container');
+const modal = document.getElementById('modal');
+const modalText = document.getElementById('modal-text');
+const modalCloseBtn = document.getElementById('modal-close');
+
+const API_URL = "http://localhost:5000";
+
+// ---------------- Functions ----------------
+function showStep(stepNumber) {
+  steps.forEach(step => step.classList.add('hidden'));
+  document.getElementById(`step-${stepNumber}`).classList.remove('hidden');
+  stepIndicators.forEach(indicator => indicator.classList.remove('step-active'));
+  for (let i = 1; i <= stepNumber; i++) {
+    document.getElementById(`step-${i}-indicator`).querySelector('div').classList.add('step-active');
+  }
+}
+
+function showModal(message) {
+  modalText.textContent = message;
+  modal.classList.remove('hidden');
+}
+
+// ---------------- Step 1: Registration ----------------
+registrationForm.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const formData = {
+    name: document.getElementById('name').value,
+    email: document.getElementById('email').value,
+    phone: document.getElementById('phone').value,
+    event: document.getElementById('event').value,
+    paymentStatus: 'pending_payment'
+  };
+
+  try {
+    const res = await fetch(`${API_URL}/api/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    });
+    const result = await res.json();
+    registrationId = result.id;
+    showStep(2);
+  } catch (err) {
+    console.error(err);
+    showModal('Registration failed.');
+  }
+});
+
+// ---------------- Step 2: PayPal ----------------
+paypal.Buttons({
+  createOrder: async function(data, actions) {
+    // Convert ₹1500 to USD (~18)
+    const usdAmount = 18; 
+    const res = await fetch(`${API_URL}/api/paypal/order`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: usdAmount })
+    });
+    const order = await res.json();
+    return order.id;
+  },
+  onApprove: async function(data, actions) {
+    try {
+      const res = await fetch(`${API_URL}/api/paypal/capture`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderID: data.orderID,
+          registrationId: registrationId
+        })
+      });
+      const result = await res.json();
+      const registration = result.registration;
+
+      showModal('Payment successful!');
+      showStep(3);
+      generateQRCode(registration);
+      displayUserDetails(registration);
+    } catch (err) {
+      console.error(err);
+      showModal('Payment failed. Please try again.');
+    }
+  },
+  onError: function(err) {
+    console.error(err);
+    showModal('Payment failed. Please try again.');
+  }
+}).render('#paypal-button-container');
+
+// ---------------- Step 3: QR Code ----------------
+function generateQRCode(qrData) {
+  const qrText = JSON.stringify(qrData);
+  qrCodeContainer.innerHTML = '';
+  QRCode.toCanvas(document.createElement('canvas'), qrText, { errorCorrectionLevel: 'H' }, function(error, canvas) {
+    if (error) showModal('Failed to generate QR code.');
+    else qrCodeContainer.appendChild(canvas);
+  });
+}
+
+function displayUserDetails(details) {
+  document.getElementById('display-name').textContent = details.name;
+  document.getElementById('display-email').textContent = details.email;
+  document.getElementById('display-event').textContent = details.event;
+  document.getElementById('display-amount').textContent = 1500; // always show INR
+}
+
+// ---------------- Buttons ----------------
+downloadQrButton.addEventListener('click', function() {
+  const canvas = qrCodeContainer.querySelector('canvas');
+  if (canvas) {
+    const link = document.createElement('a');
+    link.href = canvas.toDataURL('image/png');
+    link.download = `event-ticket.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showModal('QR code downloaded!');
+  } else showModal('No QR code to download.');
+});
+
+startOverButton.addEventListener('click', () => window.location.reload());
+goBackPayment.addEventListener('click', () => showStep(1));
+modalCloseBtn.addEventListener('click', () => modal.classList.add('hidden'));
+
+showStep(1);
+</script>
+</body>
+</html>
