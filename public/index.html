@@ -88,6 +88,9 @@
     </div>
     <div id="payment-status" class="mb-4 text-lg font-semibold text-gray-600"></div>
     <div id="paypal-button-container" class="mb-4"></div>
+    <button id="gpay-button" class="w-full mt-4 bg-blue-500 text-white font-bold py-3 px-6 rounded-xl hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition-all duration-300">
+      Pay with Google Pay
+    </button>
     <button id="go-back-payment" class="w-full mt-4 bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-xl hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-300">Go Back</button>
   </div>
 
@@ -118,11 +121,11 @@
 
 <!-- QR Code Library -->
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/qrcode.min.js"></script>
-<!-- PayPal SDK (force USD for sandbox) -->
+<!-- PayPal SDK -->
 <script src="https://www.paypal.com/sdk/js?client-id=AfGv61aBh0MzB3r8bbp9v8WHF2Fi8w_kd_CSmMpbxvUkY-euh_vTiLKTuHMj9ORTF3rJkX1_8_khRlHq&currency=USD"></script>
 
 <script>
-let registrationId = null; 
+let registrationId = null;
 const steps = document.querySelectorAll('.step');
 const stepIndicators = document.querySelectorAll('.step-indicator > div');
 const registrationForm = document.getElementById('registration-form');
@@ -134,6 +137,7 @@ const qrCodeContainer = document.getElementById('qr-code-container');
 const modal = document.getElementById('modal');
 const modalText = document.getElementById('modal-text');
 const modalCloseBtn = document.getElementById('modal-close');
+const gpayButton = document.getElementById("gpay-button");
 
 const API_URL = "http://localhost:5000";
 
@@ -181,7 +185,6 @@ registrationForm.addEventListener('submit', async function(e) {
 // ---------------- Step 2: PayPal ----------------
 paypal.Buttons({
   createOrder: async function(data, actions) {
-    // Convert ₹1500 to USD (~18)
     const usdAmount = 18; 
     const res = await fetch(`${API_URL}/api/paypal/order`, {
       method: 'POST',
@@ -196,10 +199,7 @@ paypal.Buttons({
       const res = await fetch(`${API_URL}/api/paypal/capture`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          orderID: data.orderID,
-          registrationId: registrationId
-        })
+        body: JSON.stringify({ orderID: data.orderID, registrationId })
       });
       const result = await res.json();
       const registration = result.registration;
@@ -219,6 +219,27 @@ paypal.Buttons({
   }
 }).render('#paypal-button-container');
 
+// ---------------- Step 2: Google Pay ----------------
+gpayButton.addEventListener("click", () => {
+  showModal("Please complete your payment via Google Pay. Automate will update your registration automatically.");
+
+  const checkPayment = setInterval(async () => {
+    if (!registrationId) return;
+    try {
+      const res = await fetch(`${API_URL}/api/register/${registrationId}`);
+      const data = await res.json();
+      if (data.paymentStatus === "completed") {
+        clearInterval(checkPayment);
+        showStep(3);
+        displayUserDetails(data);
+        showModal("Payment confirmed via Google Pay!");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, 5000);
+});
+
 // ---------------- Step 3: QR Code ----------------
 function generateQRCode(qrData) {
   const qrText = JSON.stringify(qrData);
@@ -233,7 +254,7 @@ function displayUserDetails(details) {
   document.getElementById('display-name').textContent = details.name;
   document.getElementById('display-email').textContent = details.email;
   document.getElementById('display-event').textContent = details.event;
-  document.getElementById('display-amount').textContent = 1500; // always show INR
+  document.getElementById('display-amount').textContent = details.amountPaid || 1500;
 }
 
 // ---------------- Buttons ----------------
